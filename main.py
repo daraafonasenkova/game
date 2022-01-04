@@ -4,8 +4,11 @@ import sys
 
 pygame.init()
 pygame.display.set_caption('тут будет название')
-size = width, height = 1500, 800
+size = width, height = 1024, 768
 screen = pygame.display.set_mode(size)
+
+pygame.mixer.music.load('music1.mp3')  # музыка
+pygame.mixer.music.play(-1)
 
 
 class Menu:
@@ -35,8 +38,10 @@ class Menu:
 
 
 menu = Menu()  # экземпляры классе меню
-menu.append_option('Играть', None)  # пока ничего не делает
+menu.append_option('Играть', None)  # пока ничего не делает, ошибка возникает из-за None(вроде, это не точно)
+menu.append_option('Настройки', None)  # сюда бы смену темы и настройку музыки добавить
 menu.append_option('Выход', quit)
+
 
 running = True
 
@@ -44,7 +49,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == KEYDOWN:  # ыбрать опцию можно с помощью стрелок
+        if event.type == KEYDOWN:  # выбрать опцию можно с помощью стрелок
             if event.key == K_UP:
                 menu.switch_option(-1)
             elif event.key == K_DOWN:
