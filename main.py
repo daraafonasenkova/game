@@ -1,4 +1,3 @@
-from pygame import *
 import pygame
 import sys
 
@@ -6,42 +5,61 @@ pygame.init()
 pygame.display.set_caption('тут будет название')
 size = width, height = 1024, 768
 screen = pygame.display.set_mode(size)
+clock = pygame.time.Clock()
 
-pygame.mixer.music.load('music1.mp3')  # музыка
+pygame.mixer.music.load('music1.mp3')
 pygame.mixer.music.play(-1)
 
 
-class Menu:
-    def __init__(self):
-        self.options = []  # для отрисовки
-        self.callbacks = []  # функции, которые вызываются при активации одного из пункта меню
-        self.current_option_index = 0  # номер выбранного пункта
+class Buttons():
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
 
-    def append_option(self, option, callback):
-        font = pygame.font.Font(None, 50)
-        self.options.append(font.render(option, True, (255, 255, 255)))
-        self.callbacks.append(callback)
+    def draw(self, x, y, text, action=None, size=30):
+        mouse_pos = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed()
 
-    def switch_option(self, direction):
-        self.current_option_index = max(0, min(self.current_option_index + direction, len(self.options) - 1))
+        if x < mouse_pos[0] < x + self.width and y < mouse_pos[1] < y + self.height:
+            pygame.draw.rect(screen, (204, 88, 48), (x, y, self.width, self.height))
+            if click[0] == 1 and action is not None:
+                if action == quit:
+                    pygame.quit()
+                else:
+                    action()
 
-    def choose_option(self, ):
-        self.callbacks[self.current_option_index]()
+        else:
+            pygame.draw.rect(screen, (234, 135, 92), (x, y, self.width, self.height))
 
-    def draw(self, surf, x, y, option_y_padding):
-        for i, option in enumerate(self.options):
-            option_rect = option.get_rect()
-            option_rect.topleft = (x, y + i * option_y_padding)
-            if i == self.current_option_index:
-                draw.rect(surf, (199, 121, 121), option_rect)
-            surf.blit(option, option_rect)
+        print_text(text=text, x=x + 10, y=y + 10, size=size)
 
 
-menu = Menu()  # экземпляры классе меню
-menu.append_option('Играть', None)  # пока ничего не делает, ошибка возникает из-за None(вроде, это не точно)
-menu.append_option('Настройки', None)  # сюда бы смену темы и настройку музыки добавить
-menu.append_option('Выход', quit)
+def print_text(text, x, y, color=(242, 242, 242), font_type='Impact.ttf', size=30):
+    font_type = pygame.font.Font(font_type, size)
+    text_ = font_type.render(text, True, color)
+    screen.blit(text_, (x, y))
 
+
+def menu():
+    back = pygame.image.load('временый фон.xcf')
+
+    start = Buttons(250, 70)
+    exit = Buttons(250, 70)
+
+    show = True
+
+    while show:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                show = False
+        screen.blit(back, (0, 0))
+        start.draw(50, 400, 'Играть', None, 50)  # чтобы запускалась игра надо вместо none передать функцию, которая запускает игру
+        exit.draw(50, 500, 'Выход', quit, 50)  # не знаю почему возникает ошибка
+
+        pygame.display.update()
+        clock.tick(60)
+
+menu()
 
 running = True
 
@@ -49,15 +67,6 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == KEYDOWN:  # выбрать опцию можно с помощью стрелок
-            if event.key == K_UP:
-                menu.switch_option(-1)
-            elif event.key == K_DOWN:
-                menu.switch_option(1)
-            elif event.key == K_SPACE:
-                menu.choose_option()
-    screen.fill((0, 0, 0))
 
-    menu.draw(screen, 100, 100, 75)
     pygame.display.flip()
 pygame.quit()
