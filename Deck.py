@@ -1,4 +1,7 @@
+import sqlite3
+
 import pygame
+import os
 from cards import Card
 import random
 
@@ -62,11 +65,65 @@ def menu():
             if event.type == pygame.QUIT:
                 show = False
         screen.blit(back, (0, 0))
-        start.draw(50, 400, 'Играть', start_game, 50)  # чтобы запускалась игра надо вместо none передать функцию, которая запускает игру
+        start.draw(50, 400, 'Играть', name_input, 50)
         exit.draw(50, 500, 'Выход', quit, 50)  # не знаю почему возникает ошибка
 
         pygame.display.update()
         clock.tick(60)
+
+input_name = ''
+
+def name_input():
+    show = True
+
+    need_input = False
+    global input_name
+
+    while show:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                show = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    menu()
+            if need_input and event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    need_input = False
+                    start_game()
+                elif event.key == pygame.K_BACKSPACE:
+                    input_name = input_name[:-1]
+                else:
+                    if len(input_name) < 18:
+                        input_name += event.unicode
+
+        screen.fill((84, 83, 83))
+        pygame.draw.rect(screen, (234, 135, 92),
+                         (350, 320, 300, 53), 10)
+        pygame.draw.rect(screen, (234, 135, 92),
+                         (350, 250, 300, 53))
+        print_text("Введите имя", 370, 250, color=(242, 242, 242), font_type='Impact.ttf', size=45)
+
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_SPACE]:
+            need_input = True
+
+        print_text(input_name, 360, 325)
+
+        pygame.display.update()
+        clock.tick(60)
+
+def zapis_name_base():
+    con = sqlite3.connect("mydatabase_durak.db")
+    cur = con.cursor()
+    result = cur.execute(
+        '''SELECT * FROM results WHERE name LIKE ?''', (input_name,)).fetchall()
+    if not result:
+        result = cur.execute("""INSERT INTO results(name, number_nikto, number_prongr, number_of_wins
+                           ) VALUES(?,?,?,?)""", (input_name, 0, 0, 0)).fetchall()
+    con.commit()
+    con.close() # не забыть доделать базу данных
+
 
 
 def start_game():
@@ -81,4 +138,5 @@ def start_game():
                 if event.key == pygame.K_ESCAPE:
                     menu()
         screen.fill((84, 83, 83))
+        print_text(f"Игрок {input_name}", 20, 20)
         pygame.display.update()
